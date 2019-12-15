@@ -27,8 +27,13 @@ yes | apt-get install wireguard-dkms wireguard-tools resolvconf qrencode
 yes | apt-get install linux-headers-$(uname -r)
 
 echo '正在配置sysctl.conf'
+
+sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.conf
+sed -i '/net.ipv6.conf.all.forwarding/d' /etc/sysctl.conf
+
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
+
 sysctl -p
 
 mkdir -p /etc/wireguard && chmod 0777 /etc/wireguard
@@ -81,5 +86,4 @@ read -p '已配置完毕,是否生成客户端二维码? [ Y | N ]  ' creat_qren
 if [ "$creat_qrencode" == "Y" ]  || [ "$creat_qrencode" == "y" ];then
 qrencode -t ansiutf8 < /etc/wireguard/client.conf
 fi
-
 
