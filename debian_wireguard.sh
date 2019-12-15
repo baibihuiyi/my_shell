@@ -23,7 +23,8 @@ fi
 
 echo '现在开始安装wireguard...'
 
-yes | apt-get install wireguard-dkms wireguard-tools resolvconf linux-headers-$(uname -r) qrencode
+yes | apt-get install wireguard-dkms wireguard-tools resolvconf qrencode
+yes | apt-get install linux-headers-$(uname -r)
 
 echo '正在配置sysctl.conf'
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
