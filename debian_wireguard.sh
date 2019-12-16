@@ -1,28 +1,33 @@
 #!/bin/bash
 
-ckdebian=`uname -a | grep Debian`
-ckubuntu=`uname -a | grep Ubuntu`
+function check_root(){
+	[[ $EUID != 0 ]] && echo -e "当前账号非ROOT(或没有ROOT权限)，无法继续" && exit 1
+}
 
 
-if [ -n "$ckdebian" ];then
-echo '系统为debian'
-echo "deb http://deb.debian.org/debian/ unstable main" > /etc/apt/sources.list.d/unstable.list
-apt update
+function check_system(){
+cksystem=`uname -a`
+case $cksystem in
 
-elif [ -n "$ckubuntu" ];then
-echo '系统为Ubuntu'
-yes | add-apt-repository ppa:wireguard/wireguard
+	*Debian*)
+		echo "系统为Debian"
+		echo "deb http://deb.debian.org/debian/ unstable main" > /etc/apt/sources.list.d/unstable.list
+		apt update
+		;;
+	*Ubuntu*)
+		echo "系统为Ubuntu"
+		yes | add-apt-repository ppa:wireguard/wireguard
+		;;
+	       *)
+      		echo '本脚本不支持此操作系统'
+		exit 1;
+esac
+}
 
-
-else
-echo '本脚本不支持此操作系统'
-exit 1;
-fi
-
-
+check_root
+check_system
 
 echo '现在开始安装wireguard...'
-
 yes | apt-get install wireguard-dkms wireguard-tools resolvconf qrencode
 yes | apt-get install linux-headers-$(uname -r)
 
@@ -30,9 +35,15 @@ echo '正在配置sysctl.conf'
 
 sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.conf
 sed -i '/net.ipv6.conf.all.forwarding/d' /etc/sysctl.conf
+sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+sed -i '/net.ipv4.tcp_fastopen/d' /etc/sysctl.conf
 
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
+echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
 
 sysctl -p
 
@@ -86,4 +97,3 @@ read -p '已配置完毕,是否生成客户端二维码? [ Y | N ]  ' creat_qren
 if [ "$creat_qrencode" == "Y" ]  || [ "$creat_qrencode" == "y" ];then
 qrencode -t ansiutf8 < /etc/wireguard/client.conf
 fi
-
