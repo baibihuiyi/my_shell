@@ -38,12 +38,15 @@ sed -i '/net.ipv6.conf.all.forwarding/d' /etc/sysctl.conf
 sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
 sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
 sed -i '/net.ipv4.tcp_fastopen/d' /etc/sysctl.conf
+sed -i '/net.ipv4.tcp_mtu_probing/d' /etc/sysctl.conf
 
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
 echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
+
 
 sysctl -p
 
@@ -97,3 +100,4 @@ read -p '已配置完毕,是否生成客户端二维码? [ Y | N ]  ' creat_qren
 if [ "$creat_qrencode" == "Y" ]  || [ "$creat_qrencode" == "y" ];then
 qrencode -t ansiutf8 < /etc/wireguard/client.conf
 fi
+
